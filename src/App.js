@@ -1,11 +1,155 @@
 // import logo from './logo.svg';
 import './App.css';
 import Content from './Content';
+import { Stage, Layer, Rect, Transformer, Line, Circle } from 'react-konva'
+import BoundingBox from './BoundingBox';
+import { useEffect, useRef, useState } from 'react';
+
 
 function App() {
+  const [pointer, setPointer] = useState({x:-1,y:-1});
+  const [selectedId, selectShape] = useState(null);
+
+  const [createRectangleStatus, setCreateRectangleStatus] = useState(false);
+  const [createRectangle, setCreateRectangle] = useState({});
+  const [rectangles, setRectangles] = useState([]);
+
+  const nameStage = useRef()
+
+  const checkDeselect = (e) => {
+    // deselect when clicked on empty area
+    const clickedOnEmpty = e.target === e.target.getStage();
+    if (clickedOnEmpty) {
+      document.body.style.cursor = 'default'
+      selectShape(null);
+    } else {
+      document.body.style.cursor = 'pointer'
+      selectShape(e.target.attrs.id);
+    }
+  };
+
+  const handlePointerUp = () => {
+    if(createRectangleStatus) {
+      const pointerPos = nameStage.current.getPointerPosition()
+      const x = pointerPos.x
+      const y = pointerPos.y
+      const width = x - createRectangle.x
+      const height = y - createRectangle.y
+      console.log(pointerPos.x, pointerPos.y)
+
+      setCreateRectangle(prev => {
+        prev.width = width
+        prev.height = height
+        return prev
+      })
+
+      setRectangles([...rectangles ,createRectangle])
+      setCreateRectangleStatus(false)
+    }
+  }
+
+  const handlePointerDown = () => {
+    console.log(selectedId);
+    if (!selectedId) {
+      const pointerPos = nameStage.current.getPointerPosition()
+      const x = pointerPos.x
+      const y = pointerPos.y
+      console.log(pointerPos.x, pointerPos.y);
+      setCreateRectangle({
+        id: rectangles.length + 1,
+        x,
+        y,
+        width: 0,
+        height: 0,
+        fill: "rgba(225,0,0,0.3)",
+        stroke: 'red',
+        strokeWidth: 0.5
+      })
+      setCreateRectangleStatus(true)
+    }
+  }
+
+  const handlePointerMove = () => {
+    console.log(selectedId, createRectangleStatus);
+    if (!selectedId || createRectangleStatus) {
+      const pointerPos = nameStage.current.getPointerPosition()
+      const x = pointerPos.x
+      const y = pointerPos.y
+      // console.log(pointerPos.x, pointerPos.y);
+      setPointer({x,y})
+    } else if (selectedId) {
+      setPointer({x:-1,y:-1})
+    } 
+
+
+    // console.log(createRectangleStatus);
+      if (createRectangleStatus) {
+        const pointerPos = nameStage.current.getPointerPosition()
+        const x = pointerPos.x
+        const y = pointerPos.y
+        const width = x - createRectangle.x
+        const height = y - createRectangle.y
+        console.log(pointerPos.x, pointerPos.y)
+
+        // console.log(createRectangle)
+
+        setCreateRectangle(prev => {
+          prev.width = width
+          prev.height = height
+          return prev
+        })
+      }
+    // console.log(selectedId)
+  }
+
   return (
     <div>
-      <Content />
+      <Stage 
+        ref={nameStage}
+        width={window.innerWidth} 
+        height={window.innerHeight}
+        onMouseMove={checkDeselect}
+        // onMouseDown={checkDeselect}
+        onPointerUp={handlePointerUp}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+      >
+        <Layer>
+          {/* <BoundingBox selectedId={selectedId} /> */}
+          {rectangles.map(rectangle => (
+            <Rect 
+              key={rectangle.id}
+              id={(rectangle.id).toString()}
+              x={rectangle.x}
+              y={rectangle.y}
+              width={rectangle.width}
+              height={rectangle.height}
+              fill={rectangle.fill}
+              stroke={rectangle.stroke}
+              strokeWidth={rectangle.strokeWidth}
+              draggable
+              onMouseMove={checkDeselect}
+            />
+          ))}
+
+          {createRectangleStatus && <Rect {...createRectangle} />}
+          
+              <Line 
+                points={[pointer.x, 0, pointer.x, window.innerHeight]}
+                stroke="rgba(0,0,0,0.4)"
+                strokeWidth={1}
+                lineJoin="round"
+                dash={[6, 3]}
+              />
+              <Line 
+                points={[0, pointer.y, window.innerWidth, pointer.y]}
+                stroke="rgba(0,0,0,0.4)"
+                strokeWidth={1}
+                lineJoin="round"
+                dash={[6, 3]}
+              />
+        </Layer>
+      </Stage>
     </div>
   );
 }

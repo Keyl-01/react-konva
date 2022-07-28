@@ -1,38 +1,45 @@
-import { Stage, Layer ,Circle ,Line } from 'react-konva'
+import { Circle ,Line } from 'react-konva'
 import Konva from 'konva'
-import { useState } from 'react';
-
-
-const circles = [
-  {
-    id: 0,
-    x: 300,
-    y: 300
-  },
-  {
-    id: 1,
-    x: 500,
-    y: 500
-  }
-]
+import { useRef, useState } from 'react';
 
 
 function Content() {
-  const [points, setPoints] = useState(circles)
+  const circles = useRef()
+  circles.current = [
+    {
+      id: 0,
+      x: 300,
+      y: 300
+    },
+    {
+      id: 1,
+      x: 500,
+      y: 500
+    }
+  ]
+
+  const [points, setPoints] = useState(circles.current)
 
   const handleDragMove = e => {
     const id = e.target.attrs.id
     // console.log(id);
-    circles[id].x = e.target.attrs.x
-    circles[id].y = e.target.attrs.y
-    setPoints([...circles])
+    circles.current[id].x = e.target.attrs.x
+    circles.current[id].y = e.target.attrs.y
+    setPoints([...circles.current])
 
     // console.log(circles[id].x, circles[id].y);
   }
 
+  const handleMouseOver = () => {
+    document.body.style.cursor = 'pointer'
+  }
+
+  const handleMouseOut = () => {
+    document.body.style.cursor = 'default'
+  }
+
   return (
-    <Stage width={window.innerWidth} height={window.innerHeight}>
-      <Layer>
+    <>
       <Line 
           points={[points[0].x, points[0].y, points[1].x, points[1].y]}
           stroke={'black'}
@@ -54,11 +61,11 @@ function Content() {
             // onDragStart={handleDragStart}
             // onDragEnd={handleDragEnd}
             onDragMove={handleDragMove}
+            onMouseOver={handleMouseOver}
+            onMouseOut={handleMouseOut}
           />
         ))}
-        
-      </Layer>
-    </Stage>
+    </>
   ) 
 }
 
