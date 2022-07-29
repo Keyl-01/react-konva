@@ -4,12 +4,14 @@ import Content from './Content';
 import { Stage, Layer, Rect, Transformer, Line, Circle } from 'react-konva'
 import BoundingBox from './BoundingBox';
 import { useEffect, useRef, useState } from 'react';
+import Rectang from './Rectang';
 
 
 function App() {
   const [pointer, setPointer] = useState({x:-1,y:-1});
   const [selectedId, selectShape] = useState(null);
 
+  const [clickId, setClickId] = useState(null);
   const [createRectangleStatus, setCreateRectangleStatus] = useState(false);
   const [createRectangle, setCreateRectangle] = useState({});
   const [rectangles, setRectangles] = useState([]);
@@ -19,6 +21,7 @@ function App() {
   const checkDeselect = (e) => {
     // deselect when clicked on empty area
     const clickedOnEmpty = e.target === e.target.getStage();
+    // console.log(clickedOnEmpty);
     if (clickedOnEmpty) {
       document.body.style.cursor = 'default'
       selectShape(null);
@@ -35,7 +38,7 @@ function App() {
       const y = pointerPos.y
       const width = x - createRectangle.x
       const height = y - createRectangle.y
-      console.log(pointerPos.x, pointerPos.y)
+      // console.log(pointerPos.x, pointerPos.y)
 
       setCreateRectangle(prev => {
         prev.width = width
@@ -49,14 +52,14 @@ function App() {
   }
 
   const handlePointerDown = () => {
-    console.log(selectedId);
-    if (!selectedId) {
+    // console.log(selectedId);
+    if (!selectedId && !(selectedId === undefined)) {
       const pointerPos = nameStage.current.getPointerPosition()
       const x = pointerPos.x
       const y = pointerPos.y
-      console.log(pointerPos.x, pointerPos.y);
+      // console.log(pointerPos.x, pointerPos.y);
       setCreateRectangle({
-        id: rectangles.length + 1,
+        id: '' + (rectangles.length + 1),
         x,
         y,
         width: 0,
@@ -70,7 +73,7 @@ function App() {
   }
 
   const handlePointerMove = () => {
-    console.log(selectedId, createRectangleStatus);
+    // console.log(selectedId, createRectangleStatus);
     if (!selectedId || createRectangleStatus) {
       const pointerPos = nameStage.current.getPointerPosition()
       const x = pointerPos.x
@@ -89,7 +92,7 @@ function App() {
         const y = pointerPos.y
         const width = x - createRectangle.x
         const height = y - createRectangle.y
-        console.log(pointerPos.x, pointerPos.y)
+        // console.log(pointerPos.x, pointerPos.y)
 
         // console.log(createRectangle)
 
@@ -115,22 +118,33 @@ function App() {
         onPointerMove={handlePointerMove}
       >
         <Layer>
-          {/* <BoundingBox selectedId={selectedId} /> */}
-          {rectangles.map(rectangle => (
-            <Rect 
-              key={rectangle.id}
-              id={(rectangle.id).toString()}
-              x={rectangle.x}
-              y={rectangle.y}
-              width={rectangle.width}
-              height={rectangle.height}
-              fill={rectangle.fill}
-              stroke={rectangle.stroke}
-              strokeWidth={rectangle.strokeWidth}
-              draggable
-              onMouseMove={checkDeselect}
-            />
-          ))}
+        {rectangles.map((rectangle, i) => (
+          <Rectang 
+            key={rectangle.id}
+            shapeProps = {rectangle}
+            // id={(rectangle.id).toString()}
+            // x={rectangle.x}
+            // y={rectangle.y}
+            // width={rectangle.width}
+            // height={rectangle.height}
+            // fill={rectangle.fill}
+            // stroke={rectangle.stroke}
+            // strokeWidth={rectangle.strokeWidth}
+
+            isSelected={rectangle.id === clickId}
+            onSelect={() => {
+              // setCreateRectangleStatus(false)
+              setClickId(rectangle.id);
+            }}
+            onChange={(newAttrs) => {
+              // setCreateRectangleStatus(false)
+              const rects = rectangles.slice();
+              rects[i] = newAttrs;
+              setRectangles(rects);
+            }}
+            // onSelect={handleClick}
+          />
+        ))}
 
           {createRectangleStatus && <Rect {...createRectangle} />}
           
