@@ -1,4 +1,4 @@
-import { Rect, Transformer, Circle } from 'react-konva'
+import { Rect, Transformer, Circle, Group } from 'react-konva'
 import { useLayoutEffect, useEffect, useRef, useState } from 'react'
 
 
@@ -25,7 +25,7 @@ const Rectang = ({ isSelected, shapeProps, onSelect, onChange }) => {
     // console.log(shapeRef.current.x())
   
     return (
-      <>
+      <Group draggable>
         <Rect
           onClick={onSelect}
           onTap={onSelect}
@@ -74,7 +74,7 @@ const Rectang = ({ isSelected, shapeProps, onSelect, onChange }) => {
             }}
           />
         )}
-      </>
+      </Group>
     );
   };
 

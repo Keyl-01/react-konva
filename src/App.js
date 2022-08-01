@@ -14,6 +14,7 @@ function App() {
   const [clickId, setClickId] = useState(null);
   const [createRectangleStatus, setCreateRectangleStatus] = useState(false);
   const [createRectangle, setCreateRectangle] = useState({});
+  const [createPoints, setCreatePoints] = useState({});
   const [rectangles, setRectangles] = useState([]);
 
   const nameStage = useRef()
@@ -68,6 +69,20 @@ function App() {
         stroke: 'red',
         strokeWidth: 0.5
       })
+      setCreatePoints({
+        id: '' + (rectangles.length + 1),
+        x,
+        y,
+        radius: 3,
+        fill: 'white',
+        stroke: 'black',
+        strokeWidth: 3
+            // onDragStart={handleDragStart}
+            // onDragEnd={handleDragEnd}
+            // onDragMove={handleDragMove}
+            // onMouseOver={handleMouseOver}
+            // onMouseOut={handleMouseOut}
+      })
       setCreateRectangleStatus(true)
     }
   }
@@ -96,11 +111,35 @@ function App() {
 
         // console.log(createRectangle)
 
+        let xPointNew, yPointNew
+        if (createRectangle.width!=0 && createRectangle.height!=0) {
+          // const tilex = (createPoints.x - createRectangle.x) / createRectangle.width
+          xPointNew = (0.5 * width) + createRectangle.x
+
+          // const tiley = (createPoints.y - createRectangle.y) / createRectangle.height
+          yPointNew = (0.5 * height) + createRectangle.y
+
+          console.log(createPoints.x, createPoints.y);
+
+          setCreatePoints(prev => {
+            prev.x = xPointNew
+            prev.y = yPointNew
+            return prev
+          })
+        }
+
+
+        // console.log(createRectangle.width, createRectangle.height);
+
         setCreateRectangle(prev => {
           prev.width = width
           prev.height = height
           return prev
         })
+
+        
+
+        console.log(createPoints);
       }
     // console.log(selectedId)
   }
@@ -146,8 +185,8 @@ function App() {
           />
         ))}
 
-          {createRectangleStatus && <Rect {...createRectangle} />}
-          
+          {createRectangleStatus && <Rect {...createRectangle}/>}
+          {createRectangleStatus && <Circle {...createPoints}/>}
               <Line 
                 points={[pointer.x, 0, pointer.x, window.innerHeight]}
                 stroke="rgba(0,0,0,0.4)"
