@@ -1,10 +1,73 @@
 // import logo from './logo.svg';
 import './App.css';
-import Content from './Content';
-import { Stage, Layer, Rect, Transformer, Line, Circle } from 'react-konva'
+import Konva from 'konva';
+import { Stage, Layer, Rect, Transformer, Line, Circle, Image } from 'react-konva'
+// import useImage from 'use-image';
 import BoundingBox from './BoundingBox';
 import { useEffect, useRef, useState } from 'react';
 import Rectang from './Rectang';
+
+
+const tile = [
+  // Dau
+  {
+    tilex: 0.5,
+    tiley: 0.1,
+    next: 1
+  },
+  // Tay
+  {
+    tilex: 0.5,
+    tiley: 0.3,
+    next: 6
+  },
+  {
+    tilex: 0.2,
+    tiley: 0.5,
+    next: 3
+  },
+  {
+    tilex: 0.4,
+    tiley: 0.4,
+    next: 1
+  },
+  {
+    tilex: 0.8,
+    tiley: 0.5,
+    next: 5
+  },
+  {
+    tilex: 0.6,
+    tiley: 0.4,
+    next: 1
+  },
+  // Chan
+  {
+    tilex: 0.5,
+    tiley: 0.7,
+    next: 6
+  },
+  {
+    tilex: 0.3,
+    tiley: 0.9,
+    next: 8
+  },
+  {
+    tilex: 0.4,
+    tiley: 0.8,
+    next: 6
+  },
+  {
+    tilex: 0.7,
+    tiley: 0.9,
+    next: 10
+  },
+  {
+    tilex: 0.6,
+    tiley: 0.8,
+    next: 6
+  },
+]
 
 
 function App() {
@@ -14,7 +77,7 @@ function App() {
   const [clickId, setClickId] = useState(null);
   const [createRectangleStatus, setCreateRectangleStatus] = useState(false);
   const [createRectangle, setCreateRectangle] = useState({});
-  const [createPoints, setCreatePoints] = useState({});
+  const [createPoints, setCreatePoints] = useState([]);
   const [rectangles, setRectangles] = useState([]);
 
   const nameStage = useRef()
@@ -41,9 +104,20 @@ function App() {
       const height = y - createRectangle.y
       // console.log(pointerPos.x, pointerPos.y)
 
+      setCreatePoints(prev => {
+        const points = []
+        prev.map(point => {
+          point.x = (point.tilex * width) + createRectangle.x
+          point.y = (point.tiley * height) + createRectangle.y
+          points.push(point)
+        })
+        return points
+      })
+
       setCreateRectangle(prev => {
         prev.width = width
         prev.height = height
+        prev.points = createPoints
         return prev
       })
 
@@ -69,19 +143,22 @@ function App() {
         stroke: 'red',
         strokeWidth: 0.5
       })
-      setCreatePoints({
-        id: '' + (rectangles.length + 1),
-        x,
-        y,
-        radius: 3,
-        fill: 'white',
-        stroke: 'black',
-        strokeWidth: 3
-            // onDragStart={handleDragStart}
-            // onDragEnd={handleDragEnd}
-            // onDragMove={handleDragMove}
-            // onMouseOver={handleMouseOver}
-            // onMouseOut={handleMouseOut}
+      
+      setCreatePoints(() => {
+        const points = []
+        for (let i = 0; i < 11; i++) {
+          points.push({
+            id: '' + (i),
+            x,
+            y,
+            radius: 3,
+            fill: 'white',
+            stroke: 'black',
+            strokeWidth: 3,
+            ...tile[i]
+          })
+        }
+        return points
       })
       setCreateRectangleStatus(true)
     }
@@ -111,20 +188,22 @@ function App() {
 
         // console.log(createRectangle)
 
-        let xPointNew, yPointNew
         if (createRectangle.width!=0 && createRectangle.height!=0) {
-          // const tilex = (createPoints.x - createRectangle.x) / createRectangle.width
-          xPointNew = (0.5 * width) + createRectangle.x
-
-          // const tiley = (createPoints.y - createRectangle.y) / createRectangle.height
-          yPointNew = (0.5 * height) + createRectangle.y
-
-          console.log(createPoints.x, createPoints.y);
-
           setCreatePoints(prev => {
-            prev.x = xPointNew
-            prev.y = yPointNew
-            return prev
+            // for (let i = 0; i < 11; i++) {
+            //   prev[i].x = (prev[i].tilex * width) + createRectangle.x
+            //   prev[i].y = (prev[i].tiley * height) + createRectangle.y
+            // }
+
+            const points = []
+            prev.map(point => {
+              point.x = (point.tilex * width) + createRectangle.x
+              point.y = (point.tiley * height) + createRectangle.y
+              points.push(point)
+              // console.log(createPoints[point.next]);
+            })
+            console.log(points);
+            return points
           })
         }
 
@@ -144,6 +223,22 @@ function App() {
     // console.log(selectedId)
   }
 
+  // function drawImage(imageObj) {
+  //   var stage = new Konva.Stage({
+  //     container: 'container',
+  //     width: window.innerWidth,
+  //     height: window.innerHeight,
+  //   });
+  // }
+
+  // var imageObj = new Image();
+  //     imageObj.onload = function () {
+  //       drawImage(this);
+  //     };
+  //     imageObj.src = './public/images.jpeg';
+
+  // const [image] = useImage('https://konvajs.org/assets/lion.png');
+
   return (
     <div>
       <Stage 
@@ -157,6 +252,15 @@ function App() {
         onPointerMove={handlePointerMove}
       >
         <Layer>
+          {/* <Image 
+            image={image}
+            x={window.innerWidth / 2}
+            y={window.innerWidth / 2}
+            width={200}
+            height={137}
+            draggable
+          /> */}
+
         {rectangles.map((rectangle, i) => (
           <Rectang 
             key={rectangle.id}
@@ -169,6 +273,7 @@ function App() {
             // fill={rectangle.fill}
             // stroke={rectangle.stroke}
             // strokeWidth={rectangle.strokeWidth}
+            points={rectangle.points}
 
             isSelected={rectangle.id === clickId}
             onSelect={() => {
@@ -186,7 +291,30 @@ function App() {
         ))}
 
           {createRectangleStatus && <Rect {...createRectangle}/>}
-          {createRectangleStatus && <Circle {...createPoints}/>}
+          {createRectangleStatus && 
+            createPoints.map(point => (
+              <Line 
+                points={[point.x, point.y, createPoints[point.next].x, createPoints[point.next].y]}
+                stroke='black'
+                strokeWidth={2}
+                lineCap='round'
+                lineJoin='round'
+              />
+            ))
+          }
+          {createRectangleStatus && 
+            createPoints.map(point => (
+              <Circle 
+                id={point.id}
+                x={point.x}
+                y={point.y}
+                radius={point.radius}
+                fill={point.fill}
+                stroke={point.stroke}
+                strokeWidth={point.strokeWidth}
+              />
+            ))
+          }
               <Line 
                 points={[pointer.x, 0, pointer.x, window.innerHeight]}
                 stroke="rgba(0,0,0,0.4)"

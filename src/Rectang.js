@@ -1,14 +1,8 @@
-import { Rect, Transformer, Circle, Group } from 'react-konva'
+import { Rect, Transformer, Circle, Line, Group } from 'react-konva'
 import { useLayoutEffect, useEffect, useRef, useState } from 'react'
+import Point from './Point'
 
-
-
-const human = {
-
-}
-
-
-const Rectang = ({ isSelected, shapeProps, onSelect, onChange }) => {
+const Rectang = ({ points, isSelected, shapeProps, onSelect, onChange }) => {
     const shapeRef = useRef();
     const trRef = useRef();
   
@@ -25,21 +19,31 @@ const Rectang = ({ isSelected, shapeProps, onSelect, onChange }) => {
     // console.log(shapeRef.current.x())
   
     return (
-      <Group draggable>
+      <>
         <Rect
           onClick={onSelect}
           onTap={onSelect}
           ref={shapeRef}
           {...shapeProps}
           draggable
-          onDragEnd={(e) => {
+          onDragMove={(e) => {
+            // console.log('Reac x: ', e.target.x());
+            // console.log('Reac y: ', e.target.y());
+
+            points.map(point => {
+              point.x = (point.tilex * e.target.width()) + e.target.x()
+              point.y = (point.tiley * e.target.height()) + e.target.y()
+            })
+
             onChange({
               ...shapeProps,
               x: e.target.x(),
               y: e.target.y(),
+              points: [...points]
             });
           }}
-          onTransformEnd={(e) => {
+
+          onTransform={(e) => {
             // transformer is changing scale of the node
             // and NOT its width or height
             // but in the store we have only width and height
@@ -47,6 +51,11 @@ const Rectang = ({ isSelected, shapeProps, onSelect, onChange }) => {
             const node = shapeRef.current;
             const scaleX = node.scaleX();
             const scaleY = node.scaleY();
+
+            points.map(point => {
+              point.x = (point.tilex * e.target.width()) + e.target.x()
+              point.y = (point.tiley * e.target.height()) + e.target.y()
+            })
   
             // we will reset it back
             node.scaleX(1);
@@ -58,6 +67,7 @@ const Rectang = ({ isSelected, shapeProps, onSelect, onChange }) => {
               // set minimal value
               width: Math.max(5, node.width() * scaleX),
               height: Math.max(node.height() * scaleY),
+              points: [...points]
             });
           }}
         />
@@ -74,7 +84,42 @@ const Rectang = ({ isSelected, shapeProps, onSelect, onChange }) => {
             }}
           />
         )}
-      </Group>
+
+        <Point 
+          shapeProps={shapeProps}
+          points={points}
+          onChange={(newAttrs) => {
+            onChange({
+              ...shapeProps,
+              points: [...newAttrs]
+            });
+          }}
+        />
+
+        {/* {points.map(point => (
+              <Line 
+                points={[point.x, point.y, points[point.next].x, points[point.next].y]}
+                stroke='black'
+                strokeWidth={2}
+                lineCap='round'
+                lineJoin='round'
+              />
+            ))
+          }
+          {points.map(point => (
+              <Circle 
+                id={point.id}
+                x={point.x}
+                y={point.y}
+                radius={point.radius}
+                fill={point.fill}
+                stroke={point.stroke}
+                strokeWidth={point.strokeWidth}
+                draggable
+              />
+            ))
+          } */}
+      </>
     );
   };
 
